@@ -1,0 +1,4 @@
+com\mycompany\beneficiarios\Usuario.class
+com\mycompany\beneficiarios\ejemplo_agregar.class
+com\mycompany\beneficiarios\ConexionBD.class
+com\mycompany\beneficiarios\ejemplo_iniciar.class

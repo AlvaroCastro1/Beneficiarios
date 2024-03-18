@@ -23,4 +23,21 @@
         <maven.compiler.target>19</maven.compiler.target>
         <exec.mainClass>com.mycompany.beneficiarios.Beneficiarios</exec.mainClass>
     </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <!-- Especificar la clase principal -->
+                            <mainClass>com.mycompany.beneficiarios.Iniciar_sesion</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -75,7 +75,7 @@ public class Iniciar_sesion extends javax.swing.JFrame {
         jLabel1.setText("Usuario:");
 
         btn_password.setBackground(new java.awt.Color(255, 255, 255));
-        btn_password.setIcon(new javax.swing.ImageIcon("src/main/java/com/mycompany/beneficiarios/imagenes/mostrar.png"); // NOI18N
+        btn_password.setIcon(new javax.swing.ImageIcon("src/main/java/com/mycompany/beneficiarios/imagenes/mostrar.png")); // NOI18N
         btn_password.setBorder(null);
         btn_password.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

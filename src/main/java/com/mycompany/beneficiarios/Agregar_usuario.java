@@ -69,7 +69,7 @@ public class Agregar_usuario extends javax.swing.JFrame {
         txt_correo.setBorder(null);
 
         btn_password.setBackground(new java.awt.Color(255, 255, 255));
-        btn_password.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/beneficiarios/imagenes/mostrar.png"))); // NOI18N
+        btn_password.setIcon(new javax.swing.ImageIcon("src/main/java/com/mycompany/beneficiarios/imagenes/mostrar.png")); // NOI18N
         btn_password.setBorder(null);
         btn_password.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -197,10 +197,10 @@ public class Agregar_usuario extends javax.swing.JFrame {
             txt_password.setEchoChar((char) 0);
             txt_password_confirm.setEchoChar((char) 0);
             
-            ImageIcon iconOcultar = new ImageIcon(getClass().getResource("/com/mycompany/beneficiarios/imagenes/ocultar.png"));
+            ImageIcon iconOcultar = new ImageIcon("src/main/java/com/mycompany/beneficiarios/imagenes/ocultar.png");
             btn_password.setIcon(iconOcultar);
         } else {
-            ImageIcon iconMostrar = new ImageIcon(getClass().getResource("/com/mycompany/beneficiarios/imagenes/mostrar.png"));
+            ImageIcon iconMostrar = new ImageIcon("src/main/java/com/mycompany/beneficiarios/imagenes/mostrar.png");
             btn_password.setIcon(iconMostrar);
             txt_password.setEchoChar('*');
             txt_password_confirm.setEchoChar('*');

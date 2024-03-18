@@ -216,6 +216,7 @@ public class Crear extends javax.swing.JFrame {
         lb_anverso.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         ayuda_nombre.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/beneficiarios/imagenes/ayuda.png"))); // NOI18N
+        ayuda_nombre.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/beneficiarios/imagenes/ayuda.png")));
         ayuda_nombre.setToolTipText(" Introduce el nombre completo tal como aparece en el documento de identidad. Ejemplo: Juan Pérez López");
         ayuda_nombre.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
@@ -417,10 +418,11 @@ public class Crear extends javax.swing.JFrame {
                                     .addComponent(txt_facebook, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(ayuda_facebook))
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel14)
-                            .addComponent(txt_instagram, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ayuda_instagram)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ayuda_instagram, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel14)
+                                .addComponent(txt_instagram, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(15, 15, 15)
                         .addComponent(lb_inverso, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))

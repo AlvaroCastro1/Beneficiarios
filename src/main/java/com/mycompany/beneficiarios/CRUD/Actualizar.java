@@ -11,9 +11,11 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,21 +32,106 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author Alvaro
  */
-public class Crear extends javax.swing.JFrame {
+public class Actualizar extends javax.swing.JFrame {
 
     private File archivoAnverso, archivoInverso;
     private String usuario;
+
     /**
      * Creates new form Crear
      */
-    public Crear() {
+    public Actualizar() {
         setLocationRelativeTo(null);
         initComponents();
     }
-    
-    public void setUsuario(String usuario){
+
+    public void setUsuario(String usuario) {
         this.usuario = usuario;
     }
+
+    private static String id;
+
+    private void setId(String id) {
+        this.id = id;
+    }
+
+    private void mostrarDatos() throws IOException {
+    try {
+        // Obtener una conexión a la base de datos
+        Connection conexion = ConexionBD.obtenerConexion();
+
+        // Preparar la consulta para obtener los datos del beneficiario
+        String consulta = "SELECT * FROM Beneficiarios WHERE id=?";
+        PreparedStatement pstmt = conexion.prepareStatement(consulta);
+
+        // Establecer el parámetro de la consulta (ID del beneficiario)
+        pstmt.setString(1, this.id);
+
+        // Ejecutar la consulta y obtener el resultado
+        ResultSet rs = pstmt.executeQuery();
+
+        // Verificar si se encontraron resultados
+        if (rs.next()) {
+            // Mostrar los datos del beneficiario en los campos de texto correspondientes
+            txt_nombre.setText(rs.getString("nombre_completo"));
+            txt_nacimiento.setDate(rs.getDate("fecha_nacimiento"));
+            txt_direccion.setText(rs.getString("direccion"));
+            txt_cp.setText(rs.getString("codigo_postal"));
+            txt_curp.setText(rs.getString("curp"));
+            txt_clave_elector.setText(rs.getString("clave_elector"));
+            txt_OCR.setText(rs.getString("ocr"));
+            txt_vigenciaINE.setDate(rs.getDate("vigencia_ine"));
+            txt_correo.setText(rs.getString("correo_electronico"));
+            txt_facebook.setText(rs.getString("facebook"));
+            txt_instagram.setText(rs.getString("instagram"));
+
+            byte[] imagenAnverso = rs.getBytes("imagen_anverso_ine");
+            ImageIcon icono = new ImageIcon(imagenAnverso);
+            Image imagen_anv_Escalada = icono.getImage().getScaledInstance(
+                    lb_anverso.getWidth(), lb_anverso.getHeight(), Image.SCALE_SMOOTH);
+            lb_anverso.setIcon(new ImageIcon(imagen_anv_Escalada));
+
+            File tempFile = File.createTempFile("anverso_", ".png");
+
+            // Escribir los bytes de la imagen en el archivo temporal
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                fos.write(imagenAnverso);
+            }
+
+            // Asignar el archivo temporal a la variable archivoAnverso
+            archivoAnverso = tempFile;
+
+            byte[] imagenReverso = rs.getBytes("imagen_reverso_ine");
+            ImageIcon icono_rev = new ImageIcon(imagenReverso);
+            Image imagen_rev_Escalada = icono_rev.getImage().getScaledInstance(
+                    lb_inverso.getWidth(), lb_inverso.getHeight(), Image.SCALE_SMOOTH);
+            lb_inverso.setIcon(new ImageIcon(imagen_rev_Escalada));
+
+            File tempFileReverso = File.createTempFile("reverso_", ".png");
+
+            // Escribir los bytes de la imagen en el archivo temporal
+            try (FileOutputStream fos = new FileOutputStream(tempFileReverso)) {
+                fos.write(imagenReverso);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+            // Asignar el archivo temporal a la variable archivoReverso
+            archivoInverso = tempFileReverso;
+        } else {
+            // Mostrar un mensaje indicando que no se encontró ningún usuario con el ID especificado
+            JOptionPane.showMessageDialog(null, "No se encontró ningún usuario con el ID especificado.");
+        }
+
+        // Cerrar la conexión y liberar recursos
+        rs.close();
+        pstmt.close();
+        conexion.close();
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al mostrar los datos del beneficiario.");
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -99,11 +186,14 @@ public class Crear extends javax.swing.JFrame {
         ayuda_correo = new javax.swing.JLabel();
         ayuda_facebook = new javax.swing.JLabel();
         ayuda_instagram = new javax.swing.JLabel();
+        txt_id = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jLabel15 = new javax.swing.JLabel();
 
         jToolBar1.setRollover(true);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle("Añadir Beneficiario");
+        setTitle("Actualizar Beneficiario");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -184,7 +274,7 @@ public class Crear extends javax.swing.JFrame {
             }
         });
 
-        btn_guardar.setText("GUARDAR");
+        btn_guardar.setText("Actualizar");
         btn_guardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_guardarActionPerformed(evt);
@@ -273,6 +363,21 @@ public class Crear extends javax.swing.JFrame {
         ayuda_instagram.setToolTipText("Introduce el nombre de usuario de Instagram, Se puede dejar en blanco. Ejemplo: ejemplo_usuario");
         ayuda_instagram.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
+        txt_id.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txt_idKeyTyped(evt);
+            }
+        });
+
+        jButton1.setText("Buscar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jLabel15.setText("Escriba el ID del beneficiario");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -314,39 +419,39 @@ public class Crear extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ayuda_fotos)
-                                    .addComponent(ayuda_correo)
-                                    .addComponent(ayuda_facebook)
-                                    .addComponent(ayuda_instagram))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 60, Short.MAX_VALUE)
-                                .addComponent(lb_inverso, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(ayuda_f_nac)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ayuda_direccion)
-                                    .addComponent(ayuda_cp)
-                                    .addComponent(ayuda_curp)
-                                    .addComponent(ayuda_elector)
-                                    .addComponent(ayuda_ocr)
-                                    .addComponent(ayuda_vigencia))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(lb_anverso, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(41, 41, 41))
+                            .addComponent(ayuda_direccion)
+                            .addComponent(ayuda_cp)
+                            .addComponent(ayuda_curp)
+                            .addComponent(ayuda_elector)
+                            .addComponent(ayuda_ocr)
+                            .addComponent(ayuda_vigencia)
+                            .addComponent(ayuda_fotos)
+                            .addComponent(ayuda_correo)
+                            .addComponent(ayuda_facebook)
+                            .addComponent(ayuda_instagram)
+                            .addComponent(ayuda_f_nac))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lb_inverso, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addComponent(txt_id)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jButton1))
+                                .addComponent(lb_anverso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btn_guardar, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(44, 44, 44))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(ayuda_nombre)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel15)
+                        .addGap(58, 58, 58))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btn_guardar)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ayuda_nombre, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -395,47 +500,55 @@ public class Crear extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel8)
                             .addComponent(ayuda_vigencia, javax.swing.GroupLayout.Alignment.TRAILING)))
-                    .addComponent(txt_vigenciaINE, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lb_anverso, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txt_vigenciaINE, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(btn_seleccionar_anverso))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ayuda_fotos)
+                .addGap(2, 2, 2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(btn_seleccionar_inverso))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(txt_correo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel12)
+                                .addComponent(txt_correoConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ayuda_correo))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel13)
+                            .addComponent(txt_facebook, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(ayuda_facebook))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel9)
-                            .addComponent(btn_seleccionar_anverso))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ayuda_fotos)
-                        .addGap(2, 2, 2)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel10)
-                            .addComponent(btn_seleccionar_inverso))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel11)
-                            .addComponent(txt_correo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel12)
-                                        .addComponent(txt_correoConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(ayuda_correo))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel13)
-                                    .addComponent(txt_facebook, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(ayuda_facebook))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ayuda_instagram, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel14)
-                                .addComponent(txt_instagram, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(15, 15, 15)
-                        .addComponent(lb_inverso, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(ayuda_instagram, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel14)
+                        .addComponent(txt_instagram, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(37, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel15)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txt_id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addGap(18, 18, 18)
+                .addComponent(btn_guardar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lb_anverso, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
+                .addComponent(lb_inverso, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16))
         );
 
         pack();
@@ -509,8 +622,8 @@ public class Crear extends javax.swing.JFrame {
                 // Obtener una conexión a la base de datos
                 Connection conexion = ConexionBD.obtenerConexion();
 
-                // Preparar la consulta para insertar los datos del beneficiario
-                String consulta = "INSERT INTO Beneficiarios (nombre_completo, fecha_nacimiento, direccion, codigo_postal, curp, clave_elector, ocr, vigencia_ine, correo_electronico, facebook, instagram, imagen_anverso_ine, imagen_reverso_ine) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                // Preparar la consulta para actualizar los datos del beneficiario
+                String consulta = "UPDATE Beneficiarios SET nombre_completo=?, fecha_nacimiento=?, direccion=?, codigo_postal=?, curp=?, clave_elector=?, ocr=?, vigencia_ine=?, correo_electronico=?, facebook=?, instagram=?, imagen_anverso_ine=?, imagen_reverso_ine=? WHERE id=?";
                 PreparedStatement pstmt = conexion.prepareStatement(consulta);
 
                 // Establecer los parámetros de la consulta
@@ -534,22 +647,26 @@ public class Crear extends javax.swing.JFrame {
                 pstmt.setBytes(12, imagenAnverso);
                 pstmt.setBytes(13, imagenInverso);
 
-                // Ejecutar la consulta para insertar los datos en la base de datos
+                // Establecer el ID del beneficiario para la actualización
+                pstmt.setString(14, this.id);
+
+                // Ejecutar la consulta para actualizar los datos en la base de datos
                 pstmt.executeUpdate();
 
                 // Cerrar la conexión y liberar recursos
                 pstmt.close();
                 conexion.close();
 
-                JOptionPane.showMessageDialog(null, "Los datos del beneficiario se han guardado correctamente.");
-                clear();
+                JOptionPane.showMessageDialog(null, "Los datos del beneficiario se han actualizado correctamente.");
+                clear(); // Limpiar los campos si es necesario
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Error al guardar los datos del beneficiario.");
+                JOptionPane.showMessageDialog(null, "Error al actualizar los datos del beneficiario.");
             } catch (IOException ex) {
-                Logger.getLogger(Crear.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Actualizar.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
     }//GEN-LAST:event_btn_guardarActionPerformed
 
     private void txt_nombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_nombreKeyTyped
@@ -668,6 +785,26 @@ public class Crear extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_formWindowClosing
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        try {
+            setId(txt_id.getText().trim());
+            mostrarDatos();
+        } catch (IOException ex) {
+            Logger.getLogger(Actualizar.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void txt_idKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_idKeyTyped
+        char c = evt.getKeyChar();
+
+        if (!Character.isDigit(c) || txt_cp.getText().length() >= 6) {
+            // Reproducir alerta (puedes cambiar esto por tu propia lógica de alerta)
+            Toolkit.getDefaultToolkit().beep();
+            evt.consume(); // Consumir el evento para evitar que se ingrese el carácter
+        }
+    }//GEN-LAST:event_txt_idKeyTyped
+
     private byte[] leerArchivo(File archivo) throws IOException {
         byte[] buffer = new byte[(int) archivo.length()];
         FileInputStream fis = new FileInputStream(archivo);
@@ -754,27 +891,20 @@ public class Crear extends javax.swing.JFrame {
         return true;
     }
 
-    public boolean validarCurp() {
+    private boolean validarCurp() {
         String curp = txt_curp.getText().trim();
 
-        String regex =
-                "[A-Z]{1}[AEIOU]{1}[A-Z]{2}[0-9]{2}" +
-                        "(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])" +
-                        "[HM]{1}" +
-                        "(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)" +
-                        "[B-DF-HJ-NP-TV-Z]{3}" +
-                        "[0-9A-Z]{1}[0-9]{1}$";
+        String regex = "^([A-Z][AEIOUX][A-Z]{2}\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\\d])(\\d)$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(curp);
 
-        Pattern patron = Pattern.compile(regex);
-        if (!patron.matcher(curp).matches()) {
+        if (!matcher.matches()) { // ¿Coincide con el formato general?
             JOptionPane.showMessageDialog(null, "La CURP no es válida.");
             return false;
-        } else {
-            return true;
-
         }
+        return true; // Validado
     }
-    
+
     private boolean validarCorreo() {
         String correo = txt_correo.getText().trim();
         String correoConfirm = txt_correoConfirm.getText().trim();
@@ -840,20 +970,21 @@ public class Crear extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Crear.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Actualizar.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Crear.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Actualizar.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Crear.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Actualizar.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Crear.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Actualizar.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Crear().setVisible(true);
+                new Actualizar().setVisible(true);
             }
         });
     }
@@ -874,12 +1005,14 @@ public class Crear extends javax.swing.JFrame {
     private javax.swing.JButton btn_guardar;
     private javax.swing.JButton btn_seleccionar_anverso;
     private javax.swing.JButton btn_seleccionar_inverso;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -899,6 +1032,7 @@ public class Crear extends javax.swing.JFrame {
     private javax.swing.JTextField txt_curp;
     private javax.swing.JTextField txt_direccion;
     private javax.swing.JTextField txt_facebook;
+    private javax.swing.JTextField txt_id;
     private javax.swing.JTextField txt_instagram;
     private com.toedter.calendar.JDateChooser txt_nacimiento;
     private javax.swing.JTextField txt_nombre;
